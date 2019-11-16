@@ -1,0 +1,32 @@
+version: '2'
+
+services:
+  files_store:
+    build: .
+    image: project
+    ports:
+      - "8001:5000"
+    environment:
+      FLASK_APP: runner.py
+      FLASK_DEBUG: 'True'
+
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+    links:
+      - postgres
+    volumes:
+      - ./project:/project
+#    tty: true
+
+  postgres:
+      restart: always
+      image: postgres:9.6
+      environment:
+        POSTGRES_USER: ${DB_USER}
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        POSTGRES_DB: ${DB_NAME}
+      ports:
+        - "5432:5432"

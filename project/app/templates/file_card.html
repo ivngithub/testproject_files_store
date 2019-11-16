@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% set active_page = 'index' %}
+
+{% block title %} File {% endblock %}
+
+{% block content %}
+
+    <main class="content-wrapper">
+        <div class="container-fluid" style="padding: 20px">
+            <h3>Карточка файла</h3>
+            <hr>
+
+            <nav aria-label="breadcrumb" style="background-color: #fdfdfd">
+                <ol class="breadcrumb" style="background-color: #fdfdfd">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('files_list') }}">Список файлов</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Карточка файла</li>
+                </ol>
+            </nav>
+            <p>
+                <span style="background-color: #f7f6f6; display: inline-block; padding: 5px 7px; border-radius: 5px;">Файл загрузил: {{ file.user.username }}</span>
+            </p>
+            <p>
+                <span style="background-color: #f7f6f6; display: inline-block; padding: 5px 7px; border-radius: 5px;">Дата загрузки: {{ file.timestamp_created }}</span>
+            </p>
+            <h4>Доступ к файлу:</h4>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Who Download</th>
+                        <th scope="col">When Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for access in file.accesses %}
+                        <tr>
+                            <th scope="row">{{ access.id }}</th>
+                            <td>{{ access.user.username }}</td>
+                            <td>{{ access.timestamp_created }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                <span>Coded 2019</span>
+            </div>
+        </div>
+    </footer>
+
+{% endblock %}

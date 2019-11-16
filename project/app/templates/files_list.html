@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% set active_page = 'index' %}
+
+{% block title %} Files list {% endblock %}
+
+{% block content %}
+
+    <main class="content-wrapper">
+        <div class="container-fluid" style="padding: 20px">
+            <h3>Список файлов</h3>
+            <hr>
+
+            <nav aria-label="breadcrumb" style="background-color: #fdfdfd">
+                <ol class="breadcrumb" style="background-color: #fdfdfd">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Список файлов</li>
+                </ol>
+            </nav>
+
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Timestamp_created</th>
+                        <th scope="col">Download</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in files %}
+                        <tr>
+                            <th scope="row">{{ file.id }}</th>
+                            <td><a href="{{ url_for('file_card', hash_id=file.hash) }}">{{ file.name }}</a></td>
+                            <td>{{ file.timestamp_created }}</td>
+                            <th scope="col"><a href="#">download</a></th>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <span>
+                {% if prev_url %}
+                    <a href="{{ prev_url }}">Prev files</a>
+                {% endif %}
+                {% if next_url %}
+                    <a href="{{ next_url }}">Next files</a>
+                {% endif %}
+            </span>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                <span>Coded 2019</span>
+            </div>
+        </div>
+    </footer>
+
+{% endblock %}

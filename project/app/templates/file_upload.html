@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% set active_page = 'index' %}
+
+{% block title %} File upload {% endblock %}
+
+{% block content %}
+
+    <main class="content-wrapper">
+        <div class="container-fluid" style="padding: 20px">
+            <h3>Загрузить файл</h3>
+            <hr>
+
+            <nav aria-label="breadcrumb" style="background-color: #fdfdfd">
+                <ol class="breadcrumb" style="background-color: #fdfdfd">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Загрузить файл</li>
+                </ol>
+            </nav>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                <span>Coded 2019</span>
+            </div>
+        </div>
+    </footer>
+
+{% endblock %}
