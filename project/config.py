@@ -1,11 +1,13 @@
 import os
 
 app_dir = os.path.abspath(os.path.dirname(__file__))
-
+files_store_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'files_store_folder')
 
 class BaseConfig:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'StapdpxtwVJJaEaOXJjGnGuwDIJElMDQXRrp#LviK%#Qk&Ck'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    FILES_STORE_FOLDER = os.path.join(app_dir, 'files_store_folder')
 
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.googlemail.com'
     MAIL_PORT = os.environ.get('MAIL_PORT') or 587

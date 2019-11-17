@@ -1,31 +1,35 @@
-{% extends 'base.html' %}
-{% set active_page = 'index' %}
+<!doctype html>
+<html lang="en">
+    <head>
 
-{% block title %} File upload {% endblock %}
+        <meta charset="UTF-8">
 
-{% block content %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.css') }}">
 
-    <main class="content-wrapper">
-        <div class="container-fluid" style="padding: 20px">
-            <h3>Загрузить файл</h3>
-            <hr>
+        <link rel="stylesheet" href="{{ url_for('static', filename='basic.css') }}">
 
-            <nav aria-label="breadcrumb" style="background-color: #fdfdfd">
-                <ol class="breadcrumb" style="background-color: #fdfdfd">
-                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Загрузить файл</li>
-                </ol>
-            </nav>
+        <script type="application/javascript" src="{{ url_for('static', filename='dropzone.js') }}">
+        </script>
 
-        </div>
-    </main>
+        <title>File Dropper</title>
+    </head>
+    <body>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="text-center">
-                <span>Coded 2019</span>
-            </div>
-        </div>
-    </footer>
+        <form method="POST" action='/upload' class="dropzone dz-clickable"
+              id="dropper" enctype="multipart/form-data">
+        </form>
 
-{% endblock %}
+    </body>
+
+    <script type="application/javascript">
+        Dropzone.options.dropper = {
+            paramName: 'file',
+            chunking: true,
+            forceChunking: true,
+            url: '/upload',
+            maxFilesize: 1025, // megabytes
+            chunkSize: 1000000 // bytes
+        }
+    </script>
+
+</html>

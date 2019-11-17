@@ -51,7 +51,7 @@ def files_generation(count_files, user_name):
 
     user = db.session.query(User).filter(User.username == user_name).first_or_404()
 
-    files_store_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'files_store_folder')
+    files_store_folder = app.config['FILES_STORE_FOLDER']
 
     for _ in range(int(count_files)):
         hsh = uuid.uuid4().hex
@@ -61,15 +61,16 @@ def files_generation(count_files, user_name):
         if not os.path.exists(sub_folder):
             os.mkdir(sub_folder)
 
-        print(sub_folder, file_name)
+        path_to_file = '{folder}/{name}'.format(folder=sub_folder, name=file_name)
+        print(path_to_file)
 
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
         pdf.cell(200, 10, txt='file name: {name}'.format(name=file_name), ln=1, align="C")
-        pdf.output('{folder}/{name}'.format(folder=sub_folder, name=file_name))
+        pdf.output(path_to_file)
 
-        file = File(original_name=file_name, name=file_name, hash=hsh, user_id=user.id)
+        file = File(original_name=file_name, name=file_name, hash=hsh, user_id=user.id, path=path_to_file)
 
         db.session.add(file)
         db.session.commit()

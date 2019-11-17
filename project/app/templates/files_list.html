@@ -22,6 +22,7 @@
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Name</th>
+                        <th scope="col">User</th>
                         <th scope="col">Timestamp_created</th>
                         <th scope="col">Download</th>
                     </tr>
@@ -31,8 +32,9 @@
                         <tr>
                             <th scope="row">{{ file.id }}</th>
                             <td><a href="{{ url_for('file_card', hash_id=file.hash) }}">{{ file.name }}</a></td>
-                            <td>{{ file.timestamp_created }}</td>
-                            <th scope="col"><a href="#">download</a></th>
+                            <td>{{ file.user.username }}</td>
+                            <td>{{ file.timestamp_created.strftime("%d-%m-%Y %H:%M:%S") }}</td>
+                            <th scope="col"><a href="{{ url_for('download', file_hash=file.hash) }}">download</a></th>
                         </tr>
                     {% endfor %}
                 </tbody>

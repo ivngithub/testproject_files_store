@@ -41,6 +41,7 @@ class File(db.Model):
     original_name = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255))
     hash = db.Column(db.String(255), nullable=False)
+    path = db.Column(db.String(255), nullable=False, default='/')
     timestamp_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id'))

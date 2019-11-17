@@ -1,9 +1,17 @@
-from flask import render_template, request, redirect, url_for, flash, make_response, session, abort
+import os, logging
+
+from flask import render_template, request, redirect, url_for, flash, abort, send_file, after_this_request,\
+    make_response
+from werkzeug.utils import secure_filename
 from flask_login import login_required, login_user,current_user, logout_user
 
 from app import app
-from .models import db, User, File
+from .models import db, User, File, FileAccess
 from .forms import LoginForm
+
+
+logging.basicConfig(filename="pydrop.log", level=logging.INFO)
+log = logging.getLogger('pydrop')
 
 
 @app.route('/login/', methods=['post', 'get'])
@@ -54,6 +62,28 @@ def files_list():
     return render_template('files_list.html', files=files.items, next_url=next_url, prev_url=prev_url)
 
 
+@app.route('/download/<file_hash>')
+# @login_required
+def download(file_hash):
+    file = db.session.query(File).filter(File.hash == file_hash).first_or_404()
+    path_to_file = file.path
+
+    @after_this_request
+    def lock_access(response):
+        access = FileAccess(file_id=file.id, user_id=current_user.id)
+        db.session.add(access)
+        db.session.commit()
+
+        return response
+
+    # #FIXME rattle - if you have very more clicks on download button. it's problem.
+    # access = FileAccess(file_id=file.id, user_id=current_user.id)
+    # db.session.add(access)
+    # db.session.commit()
+
+    return send_file(path_to_file, as_attachment=True, cache_timeout=0)
+
+
 @app.route('/file-card/<hash_id>')
 # @login_required
 def file_card(hash_id):
@@ -65,6 +95,49 @@ def file_card(hash_id):
 # @login_required
 def file_upload():
     return render_template('file_upload.html')
+
+
+@app.route('/upload', methods=['POST'])
+# @login_required
+def upload():
+    # # Route to deal with the uploaded chunks
+    # log.info(request.form)
+    # log.info(request.files)
+    file = request.files['file']
+
+    save_path = os.path.join(app.config['FILES_STORE_FOLDER'], secure_filename(file.filename))
+    current_chunk = int(request.form['dzchunkindex'])
+
+    # If the file already exists it's ok if we are appending to it,
+    # but not if it's new file that would overwrite the existing one
+    if os.path.exists(save_path) and current_chunk == 0:
+        # 400 and 500s will tell dropzone that an error occurred and show an error
+        return make_response(('File already exists', 400))
+
+    try:
+        with open(save_path, 'ab') as f:
+            f.seek(int(request.form['dzchunkbyteoffset']))
+            f.write(file.stream.read())
+    except OSError:
+        # log.exception will include the traceback so we can see what's wrong
+        log.exception('Could not write to file')
+        return make_response(("Not sure why, but we couldn't write the file to disk", 500))
+
+    total_chunks = int(request.form['dztotalchunkcount'])
+
+    if current_chunk + 1 == total_chunks:
+        # This was the last chunk, the file should be complete and the size we expect
+        if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
+            log.error("File {} was completed, but has a size mismatch. "
+                      "Was {} but we expected {} "
+                      .format(file.filename, os.path.getsize(save_path), request.form['dztotalfilesize']))
+            return make_response(('Size mismatch', 500))
+        else:
+            log.info('File {} has been uploaded successfully'.format(file.filename))
+    else:
+        log.debug('Chunk {} of {} for file {} complete'.format(current_chunk + 1, total_chunks, file.filename))
+
+    return make_response(('Chunk upload successful', 200))
 
 
 @app.errorhandler(404)

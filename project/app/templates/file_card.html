@@ -21,7 +21,7 @@
                 <span style="background-color: #f7f6f6; display: inline-block; padding: 5px 7px; border-radius: 5px;">Файл загрузил: {{ file.user.username }}</span>
             </p>
             <p>
-                <span style="background-color: #f7f6f6; display: inline-block; padding: 5px 7px; border-radius: 5px;">Дата загрузки: {{ file.timestamp_created }}</span>
+                <span style="background-color: #f7f6f6; display: inline-block; padding: 5px 7px; border-radius: 5px;">Дата загрузки: {{ file.timestamp_created.strftime("%d-%m-%Y %H:%M:%S") }}</span>
             </p>
             <h4>Доступ к файлу:</h4>
             <table class="table table-bordered table-hover">
@@ -35,9 +35,9 @@
                 <tbody>
                     {% for access in file.accesses %}
                         <tr>
-                            <th scope="row">{{ access.id }}</th>
+                            <th scope="row">{{ loop.index }}</th>
                             <td>{{ access.user.username }}</td>
-                            <td>{{ access.timestamp_created }}</td>
+                            <td>{{ access.when_timestamp.strftime("%d-%m-%Y %H:%M:%S") }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
