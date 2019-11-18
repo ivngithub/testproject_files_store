@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% set active_page = 'index' %}
+
+{% block title %} Search files {% endblock %}
+
+{% block content %}
+
+    <main class="content-wrapper">
+        <div class="container-fluid" style="padding: 20px">
+            <h3>Поиск файлов</h3>
+            <hr>
+
+            <nav aria-label="breadcrumb" style="background-color: #fdfdfd">
+                <ol class="breadcrumb" style="background-color: #fdfdfd">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Поиск файлов</li>
+                </ol>
+            </nav>
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    {% for category, message in  get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            <p class="{{ category }}">{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <form action="" method="post">
+                {{ form.csrf_token }}
+                <div class="form-row">
+                    <div class="col-7">
+                        <label for="file_name">File Name</label>
+                        <input type="text" class="form-control" id="file_name" name="file_name" placeholder="File name">
+                        <p style="color: red">
+                            {% if form.file_name.errors %}
+                                {% for error in form.file_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col">
+                        <label for="size_from">File size from &#60;Byte&#62;</label>
+                        <input type="text" class="form-control" id="size_from" name="size_from" value="0" placeholder="File size from <Byte>">
+                        <p style="color: red">
+                            {% if form.size_from.errors %}
+                                {% for error in form.size_from.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col">
+                        <label for="size_to">File size to &#60;Byte&#62;</label>
+                        <input type="text" class="form-control" id="size_to" name="size_to" value="0" placeholder="File size to <Byte>">
+                        <p style="color: red">
+                            {% if form.size_to.errors %}
+                                {% for error in form.size_to.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+                {% if was_search %}
+
+                    <br>
+                    <h4>Результат поиска:</h4>
+                    <hr>
+
+                    {% if files %}
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">User</th>
+                                    <th scope="col">Timestamp_created</th>
+                                    <th scope="col">Download</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                    <tr>
+                                        <th scope="row">{{ loop.index }}</th>
+                                        <td><a href="{{ url_for('file_card', hash_id=file.hash) }}">{{ file.original_name }}</a></td>
+                                        <td>{{ file.user.username }}</td>
+                                        <td>{{ file.timestamp_created.strftime("%d-%m-%Y %H:%M:%S") }}</td>
+                                        <th scope="col"><a href="{{ url_for('download', file_hash=file.hash) }}">download</a></th>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br>
+                    {% else %}
+                        <p>Ни чего не найдино</p>
+                    {% endif %}
+
+                {% endif %}
+            <br>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="text-center">
+                <span>Coded 2019</span>
+            </div>
+        </div>
+    </footer>
+
+{% endblock %}

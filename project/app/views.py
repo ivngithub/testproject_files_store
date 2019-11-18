@@ -7,7 +7,7 @@ from flask_login import login_required, login_user,current_user, logout_user
 
 from app import app
 from .models import db, User, File, FileAccess
-from .forms import LoginForm
+from .forms import LoginForm, SearchForm
 
 
 logging.basicConfig(filename="pydrop.log", level=logging.INFO)
@@ -41,13 +41,13 @@ def logout():
 
 
 @app.route('/')
-# @login_required
+@login_required
 def index():
     return render_template('index.html')
 
 
 @app.route('/files-list/', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def files_list():
     page = request.args.get('page', 1, type=int)
     per_page = app.config['FILES_PER_PAGE']
@@ -63,7 +63,7 @@ def files_list():
 
 
 @app.route('/download/<file_hash>')
-# @login_required
+@login_required
 def download(file_hash):
     file = db.session.query(File).filter(File.hash == file_hash).first_or_404()
     path_to_file = file.path
@@ -85,20 +85,20 @@ def download(file_hash):
 
 
 @app.route('/file-card/<hash_id>')
-# @login_required
+@login_required
 def file_card(hash_id):
     file = db.session.query(File).filter(File.hash == hash_id).first_or_404()
 
     return render_template('file_card.html', file=file)
 
 @app.route('/file-upload/')
-# @login_required
+@login_required
 def file_upload():
     return render_template('file_upload.html')
 
 
 @app.route('/upload', methods=['POST'])
-# @login_required
+@login_required
 def upload():
     # need for debug
     # # Route to deal with the uploaded chunks
@@ -157,7 +157,8 @@ def upload():
 
             log.info('File {} has been renamed to {}'.format(original_filename, new_file))
 
-            file = File(original_name=original_filename, hash=hsh, user_id=current_user.id, path=new_file)
+            file = File(original_name=original_filename, hash=hsh, user_id=current_user.id, path=new_file,
+                        total_size=os.path.getsize(new_file))
 
             db.session.add(file)
             db.session.commit()
@@ -169,6 +170,39 @@ def upload():
     return make_response(('Chunk upload successful', 200))
 
 
+@app.route('/search/', methods=['GET', 'POST'])
+@login_required
+def search():
+
+    found_files = None
+    was_search = False
+    form = SearchForm()
+    if form.validate_on_submit():
+        file_name = form.file_name.data
+        size_from = form.size_from.data
+        size_to = form.size_to.data
+
+        if size_from > size_to:
+            abort(404)
+        was_search = True
+        find_file = '{}%'.format(file_name)
+
+        if size_to and file_name:
+            found_files = db.session.query(File).filter(
+                File.original_name.like(find_file) &
+                (File.total_size >= size_from) &
+                (File.total_size <= size_to)).all()
+        elif size_to and not file_name:
+            found_files = db.session.query(File).filter(
+                (File.total_size >= size_from) &
+                (File.total_size <= size_to)).all()
+        elif file_name:
+            found_files  = db.session.query(File).filter(File.original_name.like(find_file)).all()
+
+
+    return render_template('search.html', form=form, files=found_files, was_search=was_search)
+
+
 @app.errorhandler(404)
 def http_404_handler(error):
     return "<p>HTTP 404 Error Encountered</p>", 404
@@ -177,8 +211,3 @@ def http_404_handler(error):
 @app.errorhandler(500)
 def http_500_handler(error):
     return "<p>HTTP 500 Error Encountered</p>", 500
-
-
-@app.route("/error/")
-def error():
-    abort(404)

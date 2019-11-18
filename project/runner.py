@@ -70,7 +70,8 @@ def files_generation(count_files, user_name):
         pdf.cell(200, 10, txt='file name: {name}'.format(name=file_name), ln=1, align="C")
         pdf.output(path_to_file)
 
-        file = File(original_name=file_name, hash=hsh, user_id=user.id, path=path_to_file)
+        file = File(original_name=file_name, hash=hsh, user_id=user.id, path=path_to_file,
+                    total_size=os.path.getsize(path_to_file))
 
         db.session.add(file)
         db.session.commit()

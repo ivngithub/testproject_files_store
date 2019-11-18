@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
-{% set active_page = 'index' %}
 
 {% block head %}
     {{ super() }}
-    {% block title %} Files upload {% endblock %}
 
     <link rel="stylesheet" href="{{ url_for('static', filename='dropzone.css') }}">
 
@@ -12,6 +10,8 @@
     <script type="application/javascript" src="{{ url_for('static', filename='dropzone.js') }}"></script>
 
 {% endblock %}
+
+{% block title %} Files upload {% endblock %}
 
 {% block content %}
 

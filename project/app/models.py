@@ -41,6 +41,7 @@ class File(db.Model):
     original_name = db.Column(db.String(255), nullable=False)
     hash = db.Column(db.String(255), nullable=False)
     path = db.Column(db.String(255), nullable=False)
+    total_size = db.Column(db.Integer, nullable=False)
     timestamp_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id'))
@@ -48,10 +49,10 @@ class File(db.Model):
     accesses = db.relationship('FileAccess', backref='file')
 
     def __str__(self):
-        return self.name
+        return self.original_name
 
     def __repr__(self):
-        return "<{}:{}>".format(id, self.name)
+        return "<{}:{}>".format(id, self.original_name)
 
 
 class FileAccess(db.Model):
