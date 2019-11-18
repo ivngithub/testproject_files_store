@@ -1,0 +1,8 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# exclude everything
+project/migrations/*
+project/files_store_folder/*
+project/commands.txt

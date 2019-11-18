@@ -39,9 +39,8 @@ class File(db.Model):
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True)
     original_name = db.Column(db.String(255), nullable=False)
-    name = db.Column(db.String(255))
     hash = db.Column(db.String(255), nullable=False)
-    path = db.Column(db.String(255), nullable=False, default='/')
+    path = db.Column(db.String(255), nullable=False)
     timestamp_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id'))

@@ -1,4 +1,4 @@
-import os, logging
+import os, logging, uuid
 
 from flask import render_template, request, redirect, url_for, flash, abort, send_file, after_this_request,\
     make_response
@@ -100,42 +100,71 @@ def file_upload():
 @app.route('/upload', methods=['POST'])
 # @login_required
 def upload():
+    # need for debug
     # # Route to deal with the uploaded chunks
     # log.info(request.form)
     # log.info(request.files)
-    file = request.files['file']
 
-    save_path = os.path.join(app.config['FILES_STORE_FOLDER'], secure_filename(file.filename))
+    files_store_folder = app.config['FILES_STORE_FOLDER']
+    hsh = request.form['dzuuid']
+
+    file = request.files['file']
+    original_filename = file.filename
+
+    # I think keeping all the files in one folder is a bad idea.
+    sub_folder_name = hsh[0:2]
+    sub_folder = os.path.join(files_store_folder, sub_folder_name)
+    if not os.path.exists(sub_folder):
+        os.mkdir(sub_folder)
+
+    tmp_path = os.path.join(sub_folder, secure_filename(original_filename))
+    _, file_extension = os.path.splitext(tmp_path)
+    new_file_name = hsh + file_extension
+    path_to_file = '{folder}/{name}'.format(folder=sub_folder, name=new_file_name)
+
     current_chunk = int(request.form['dzchunkindex'])
 
     # If the file already exists it's ok if we are appending to it,
     # but not if it's new file that would overwrite the existing one
-    if os.path.exists(save_path) and current_chunk == 0:
+    if os.path.exists(path_to_file) and current_chunk == 0:
         # 400 and 500s will tell dropzone that an error occurred and show an error
         return make_response(('File already exists', 400))
 
     try:
-        with open(save_path, 'ab') as f:
+        with open(path_to_file, 'ab') as f:
             f.seek(int(request.form['dzchunkbyteoffset']))
             f.write(file.stream.read())
     except OSError:
         # log.exception will include the traceback so we can see what's wrong
         log.exception('Could not write to file')
-        return make_response(("Not sure why, but we couldn't write the file to disk", 500))
+        return make_response(('Not sure why, but we couldn\'t write the file to disk', 500))
 
     total_chunks = int(request.form['dztotalchunkcount'])
 
     if current_chunk + 1 == total_chunks:
         # This was the last chunk, the file should be complete and the size we expect
-        if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
+        if os.path.getsize(path_to_file) != int(request.form['dztotalfilesize']):
             log.error("File {} was completed, but has a size mismatch. "
                       "Was {} but we expected {} "
-                      .format(file.filename, os.path.getsize(save_path), request.form['dztotalfilesize']))
+                      .format(original_filename, os.path.getsize(path_to_file), request.form['dztotalfilesize']))
             return make_response(('Size mismatch', 500))
         else:
-            log.info('File {} has been uploaded successfully'.format(file.filename))
+            log.info('File {} has been uploaded successfully'.format(original_filename))
+
+            hsh = uuid.uuid4().hex
+            new_file = '{folder}/{name}'.format(folder=sub_folder, name=hsh + file_extension)
+            os.rename(path_to_file, new_file)
+
+            log.info('File {} has been renamed to {}'.format(original_filename, new_file))
+
+            file = File(original_name=original_filename, hash=hsh, user_id=current_user.id, path=new_file)
+
+            db.session.add(file)
+            db.session.commit()
+
     else:
-        log.debug('Chunk {} of {} for file {} complete'.format(current_chunk + 1, total_chunks, file.filename))
+        log.debug('Chunk {} of {} for file {} complete {}'
+                  .format(current_chunk + 1, total_chunks, original_filename, request.form))
 
     return make_response(('Chunk upload successful', 200))
 
