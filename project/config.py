@@ -1,7 +1,7 @@
 import os
 
 app_dir = os.path.abspath(os.path.dirname(__file__))
-files_store_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'files_store_folder')
+files_store_folder = os.path.join(app_dir, 'files_store_folder')
 
 class BaseConfig:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'StapdpxtwVJJaEaOXJjGnGuwDIJElMDQXRrp#LviK%#Qk&Ck'
