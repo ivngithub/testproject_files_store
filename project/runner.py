@@ -46,7 +46,7 @@ def files_generation(count_files, user_name):
     """
     file generation - fake-files <count_files> <user_name>
     """
-    import uuid, os, sh
+    import uuid, os
     from fpdf import FPDF
 
     user = db.session.query(User).filter(User.username == user_name).first_or_404()
